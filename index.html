@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="zh-Hant">
+<head>
+    <meta charset="UTF-8">
+    <title>摩斯密碼小遊戲</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div class="container">
+        <h1 class="title">摩斯密碼小遊戲</h1>
+
+        <div class="card">
+            <div id="letter" class="letter">?</div>
+
+            <div class="buttons">
+                <button class="btn dot" onclick="addDot()">·</button>
+                <button class="btn dash" onclick="addDash()">–</button>
+                <button class="btn submit" onclick="checkAnswer()">送出</button>
+                <button class="btn reset" onclick="resetInput()">清除</button>
+            </div>
+
+            <div id="input" class="input-display"></div>
+            <div id="hint" class="hint"></div>
+            <div id="result" class="result"></div>
+
+            <label class="hint-toggle">
+                <input type="checkbox" id="toggleHint" onchange="toggleHint()"> 顯示正確摩斯碼
+            </label>
+        </div>
+    </div>
+
+    <script>
+        let currentLetter = "";
+        let currentMorse = "";
+        let userInput = "";
+
+        async function newLetter() {
+            const res = await fetch("/random_letter");
+            const data = await res.json();
+            currentLetter = data.letter;
+            currentMorse = data.morse;
+            document.getElementById("letter").textContent = currentLetter;
+            resetInput();
+            updateHint();
+            document.getElementById("result").textContent = "";
+        }
+
+        function addDot() { userInput += "."; document.getElementById("input").textContent = userInput; }
+        function addDash() { userInput += "-"; document.getElementById("input").textContent = userInput; }
+        function resetInput() { userInput = ""; document.getElementById("input").textContent = ""; }
+        function checkAnswer() {
+            if (userInput === currentMorse) {
+                document.getElementById("result").textContent = "✅ 正確！";
+                setTimeout(newLetter, 1000);
+            } else {
+                document.getElementById("result").textContent = "❌ 錯誤，再試一次！";
+            }
+        }
+        function toggleHint() { updateHint(); }
+        function updateHint() {
+            if (document.getElementById("toggleHint").checked) {
+                document.getElementById("hint").textContent = "提示：" + currentMorse;
+            } else {
+                document.getElementById("hint").textContent = "";
+            }
+        }
+
+        newLetter();
+    </script>
+</body>
+</html>
